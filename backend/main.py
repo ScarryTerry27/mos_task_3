@@ -2,8 +2,8 @@ from typing import Dict
 
 from fastapi import FastAPI
 
-from backend.handlers.auth import router as auth_router
-from backend.service.db.db import create_tables
+from handlers.auth import router as auth_router
+from service.db.db import create_tables
 
 create_tables()
 
