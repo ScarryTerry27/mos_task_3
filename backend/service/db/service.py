@@ -3,7 +3,7 @@ from typing import List, Optional
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from backend.service.db import model, schema
+from service.db import model, schema
 
 
 class UserService:

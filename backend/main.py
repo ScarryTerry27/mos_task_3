@@ -2,8 +2,8 @@ from typing import Dict
 
 from fastapi import FastAPI
 
-from backend.handlers.auth import router as auth_router
-from backend.service.db.db import create_tables
+from handlers.auth import router as auth_router
+from service.db.db import create_tables
 
 create_tables()
 
@@ -14,3 +14,9 @@ app.include_router(auth_router)
 @app.get("/")
 def read_root() -> Dict[str, str]:
     return {"status": "ok"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from backend.service.db import schema
-from backend.service.db.db import get_db
-from backend.service.db.service import UserService
-from backend.service.keycloak import KeycloakService, get_keycloak_service
+from service.db import schema
+from service.db.db import get_db
+from service.db.service import UserService
+from service.keycloak import KeycloakService, get_keycloak_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

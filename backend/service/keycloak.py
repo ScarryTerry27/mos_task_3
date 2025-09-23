@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional
 import requests
 from fastapi import HTTPException, Response, status
 
-from backend import config
+import config
 
 
 class KeycloakService:
