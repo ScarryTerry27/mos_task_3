@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
-from datetime import datetime
-from typing import Optional, Dict, Any
+from datetime import datetime, date
+from typing import Optional
 from enum import Enum
 
 
@@ -70,9 +70,8 @@ class SubObject(SubObjectBase):
 
 
 class CheckBase(BaseModel):
-    phone: Optional[str] = None
     photo: Optional[str] = None
-    location: Optional[Dict[str, Any]] = None
+    location: Optional[str] = None
     info: Optional[str] = None
 
 
@@ -90,6 +89,7 @@ class Check(CheckBase):
 
 class IncidentBase(BaseModel):
     info: str
+    photo: Optional[str] = None
 
 
 class IncidentCreate(IncidentBase):
@@ -106,6 +106,7 @@ class Incident(IncidentBase):
 
 class DocumentBase(BaseModel):
     file_id: str
+    doc_date: Optional[date] = None
 
 
 class DocumentCreate(DocumentBase):
@@ -114,14 +115,13 @@ class DocumentCreate(DocumentBase):
 
 class Document(DocumentBase):
     document_id: int
-    date: datetime
     check_id: int
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class MaterialBase(BaseModel):
-    tm_id: Optional[int] = None
+    ttn_id: Optional[int] = None
     parsed_data: Optional[str] = None
 
 
