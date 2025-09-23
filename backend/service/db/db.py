@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from backend.service.db.model import Base
+from service.db.model import Base
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./xaarou.db"
 engine = create_engine(
