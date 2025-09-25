@@ -32,6 +32,10 @@ class PrescriptionTypeEnum(enum.Enum):
     TYPE_2 = "Тип 2"
 
 
+class DocTypeEnum(enum.Enum):
+    TTN = "ТТН"
+    OUTPUT = "output"
+
 class User(Base):
     __tablename__ = "USER"
 
@@ -104,7 +108,7 @@ class Document(Base):
     document_id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("USER.user_id"))
     object_id = Column(Integer, ForeignKey("OBJECT.object_id"))
-    doc_type = Column(String(100))  # ТТН, output
+    doc_type = Column(Enum(DocTypeEnum))
     doc_number = Column(String(50))
     doc_date_start = Column(Date)
     doc_date_end = Column(Date)

@@ -26,6 +26,10 @@ class PrescriptionTypeEnum(str, Enum):
     TYPE_1 = "Тип 1"
     TYPE_2 = "Тип 2"
 
+class DocTypeEnum(str, Enum):
+    TTN = "ТТН"
+    OUTPUT = "output"
+
 # Базовые схемы для всех моделей
 class UserBase(BaseModel):
     name: str
@@ -95,7 +99,7 @@ class IncidentResponse(IncidentBase):
     date: datetime
 
 class DocumentBase(BaseModel):
-    doc_type: str
+    doc_type: DocTypeEnum
     doc_number: str
     doc_date_start: date
     doc_date_end: date
