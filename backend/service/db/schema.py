@@ -1,150 +1,169 @@
-from pydantic import BaseModel, ConfigDict
-from datetime import datetime
-from typing import Optional, Dict, Any
-from enum import Enum
+from pydantic import BaseModel
+from datetime import datetime, date
+from typing import Optional
 
 
-class StatusEnum(str, Enum):
-    COMPLETED = "Выполнено"
-    IN_PROGRESS = "В работе"
-    NOT_STARTED = "Не приступали"
-    ON_CONTROL = "Взять на контроль"
-
-
-class RoleEnum(str, Enum):
-    CONTRACTOR = "contractor"
-    INSPECTOR = "inspector"
-    ADMIN = "admin"
-
-
+# Базовые схемы для всех моделей
 class UserBase(BaseModel):
     name: str
-    password: str
-    role: RoleEnum
-
+    role: str
 
 class UserCreate(UserBase):
-    pass
+    password: str
 
-
-class User(UserBase):
+class UserResponse(UserBase):
     user_id: int
-
-    model_config = ConfigDict(from_attributes=True)
-
 
 class ObjectBase(BaseModel):
     name: str
     status: Optional[str] = None
-
+    address: Optional[str] = None
 
 class ObjectCreate(ObjectBase):
-    inspection_id: Optional[int] = None
-    contractor_id: Optional[int] = None
+    admin_id: int
+    inspector_id: int
+    contractor_id: int
 
-
-class Object(ObjectBase):
+class ObjectResponse(ObjectBase):
     object_id: int
-    inspection_id: Optional[int]
-    contractor_id: Optional[int]
-
-    model_config = ConfigDict(from_attributes=True)
-
+    admin_id: int
+    inspector_id: int
+    contractor_id: int
 
 class SubObjectBase(BaseModel):
     name: str
-    status_inspector: Optional[StatusEnum] = None
-    status_contractor: Optional[StatusEnum] = None
-    status_admin: Optional[StatusEnum] = None
-
+    status_inspector: Optional[str] = None
+    status_contractor: Optional[str] = None
+    status_admin: Optional[str] = None
+    prescription_info: Optional[str] = None
 
 class SubObjectCreate(SubObjectBase):
     object_id: int
 
-
-class SubObject(SubObjectBase):
+class SubObjectResponse(SubObjectBase):
     subobject_id: int
     object_id: int
 
-    model_config = ConfigDict(from_attributes=True)
-
-
 class CheckBase(BaseModel):
-    phone: Optional[str] = None
-    photo: Optional[str] = None
-    location: Optional[Dict[str, Any]] = None
     info: Optional[str] = None
-
+    location: Optional[str] = None
+    status_check: Optional[str] = None
 
 class CheckCreate(CheckBase):
     subobject_id: int
 
-
-class Check(CheckBase):
+class CheckResponse(CheckBase):
     check_id: int
-    datetime: datetime
     subobject_id: int
-
-    model_config = ConfigDict(from_attributes=True)
-
+    datetime: datetime
 
 class IncidentBase(BaseModel):
-    info: str
-
+    photo: Optional[str] = None
+    incident_status: Optional[bool] = None
+    incident_info: Optional[str] = None
+    prescription_type: Optional[str] = None
 
 class IncidentCreate(IncidentBase):
     check_id: int
 
-
-class Incident(IncidentBase):
+class IncidentResponse(IncidentBase):
     incident_id: int
-    date: datetime
     check_id: int
-
-    model_config = ConfigDict(from_attributes=True)
-
+    date: datetime
 
 class DocumentBase(BaseModel):
-    file_id: str
-
+    doc_type: str
+    doc_number: str
+    doc_date_start: date
+    doc_date_end: date
+    doc_image_id: str
 
 class DocumentCreate(DocumentBase):
-    check_id: int
+    user_id: int
+    object_id: int
 
-
-class Document(DocumentBase):
+class DocumentResponse(DocumentBase):
     document_id: int
-    date: datetime
-    check_id: int
-
-    model_config = ConfigDict(from_attributes=True)
-
+    user_id: int
+    object_id: int
 
 class MaterialBase(BaseModel):
-    tm_id: Optional[int] = None
-    parsed_data: Optional[str] = None
-
+    name: str
+    okpd: Optional[str] = None
+    amount: float
+    uom: str
+    to_be_certified: bool
+    certificate: Optional[str] = None
 
 class MaterialCreate(MaterialBase):
-    pass
+    doc_id: int
 
-
-class Material(MaterialBase):
+class MaterialResponse(MaterialBase):
     material_id: int
+    doc_id: int
 
-    model_config = ConfigDict(from_attributes=True)
+# Схемы для обновления (все поля опциональны)
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    password: Optional[str] = None
+    role: Optional[str] = None
 
+class ObjectUpdate(BaseModel):
+    name: Optional[str] = None
+    admin_id: Optional[int] = None
+    inspector_id: Optional[int] = None
+    contractor_id: Optional[int] = None
+    status: Optional[str] = None
+    address: Optional[str] = None
 
-class StatusBase(BaseModel):
-    status: StatusEnum
+class SubObjectUpdate(BaseModel):
+    name: Optional[str] = None
+    status_inspector: Optional[str] = None
+    status_contractor: Optional[str] = None
+    status_admin: Optional[str] = None
+    prescription_info: Optional[str] = None
+    object_id: Optional[int] = None
+
+class CheckUpdate(BaseModel):
     info: Optional[str] = None
+    location: Optional[str] = None
+    status_check: Optional[str] = None
+    subobject_id: Optional[int] = None
 
+class IncidentUpdate(BaseModel):
+    photo: Optional[str] = None
+    incident_status: Optional[bool] = None
+    incident_info: Optional[str] = None
+    prescription_type: Optional[str] = None
+    check_id: Optional[int] = None
 
-class StatusCreate(StatusBase):
-    pass
+class DocumentUpdate(BaseModel):
+    doc_type: Optional[str] = None
+    doc_number: Optional[str] = None
+    doc_date_start: Optional[date] = None
+    doc_date_end: Optional[date] = None
+    doc_image_id: Optional[str] = None
+    user_id: Optional[int] = None
+    object_id: Optional[int] = None
 
+class MaterialUpdate(BaseModel):
+    name: Optional[str] = None
+    okpd: Optional[str] = None
+    amount: Optional[float] = None
+    uom: Optional[str] = None
+    to_be_certified: Optional[bool] = None
+    certificate: Optional[str] = None
+    doc_id: Optional[int] = None
 
-class Status(StatusBase):
-    status_id: int
+# Простые схемы для аутентификации
+class LoginRequest(BaseModel):
+    username: str
+    password: str
 
-    model_config = ConfigDict(from_attributes=True)
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+# Базовая схема ответа
+class MessageResponse(BaseModel):
+    message: str
