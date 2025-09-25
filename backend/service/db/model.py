@@ -27,6 +27,11 @@ class RoleEnum(enum.Enum):
     ADMIN = "admin"
 
 
+class PrescriptionTypeEnum(enum.Enum):
+    TYPE_1 = "Тип 1"
+    TYPE_2 = "Тип 2"
+
+
 class User(Base):
     __tablename__ = "USER"
 
@@ -88,7 +93,7 @@ class Incident(Base):
     photo = Column(Text)
     incident_status = Column(Boolean)
     incident_info = Column(Text)
-    prescription_type = Column(Text)
+    prescription_type = Column(Enum(PrescriptionTypeEnum))
 
     check = relationship("Check")
 
@@ -99,7 +104,7 @@ class Document(Base):
     document_id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("USER.user_id"))
     object_id = Column(Integer, ForeignKey("OBJECT.object_id"))
-    doc_type = Column(String(100))  # ID, output
+    doc_type = Column(String(100))  # ТТН, output
     doc_number = Column(String(50))
     doc_date_start = Column(Date)
     doc_date_end = Column(Date)

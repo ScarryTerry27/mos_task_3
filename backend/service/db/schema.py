@@ -1,7 +1,30 @@
+import enum
+from enum import Enum
 from pydantic import BaseModel
 from datetime import datetime, date
 from typing import Optional
 
+
+class StatusEnum(str, Enum):
+    COMPLETED = "Выполнено"
+    IN_PROGRESS = "В работе"
+    NOT_STARTED = "Не начато"
+    ON_HOLD = "Приостановлено"
+
+class CheckStatusEnum(str, Enum):
+    APPROVED = "Утверждено"
+    REJECTED = "Отклонено"
+    NEEDS_CORRECTION = "Требует исправлений"
+    UNDER_REVIEW = "На рассмотрении"
+
+class RoleEnum(str, Enum):
+    CONTRACTOR = "contractor"
+    INSPECTOR = "inspector"
+    ADMIN = "admin"
+
+class PrescriptionTypeEnum(str, Enum):
+    TYPE_1 = "Тип 1"
+    TYPE_2 = "Тип 2"
 
 # Базовые схемы для всех моделей
 class UserBase(BaseModel):
@@ -61,7 +84,7 @@ class IncidentBase(BaseModel):
     photo: Optional[str] = None
     incident_status: Optional[bool] = None
     incident_info: Optional[str] = None
-    prescription_type: Optional[str] = None
+    prescription_type: Optional[PrescriptionTypeEnum] = None
 
 class IncidentCreate(IncidentBase):
     check_id: int
@@ -134,7 +157,7 @@ class IncidentUpdate(BaseModel):
     photo: Optional[str] = None
     incident_status: Optional[bool] = None
     incident_info: Optional[str] = None
-    prescription_type: Optional[str] = None
+    prescription_type: Optional[PrescriptionTypeEnum] = None
     check_id: Optional[int] = None
 
 class DocumentUpdate(BaseModel):
