@@ -1,6 +1,4 @@
-from sqlite3 import Date
-
-from sqlalchemy import Column, Integer, String, DateTime, Date, ForeignKey, Enum, Text
+from sqlalchemy import Column, Integer, String, DateTime, Date, ForeignKey, Enum, Text, Float, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import enum
@@ -12,8 +10,15 @@ Base = declarative_base()
 class StatusEnum(enum.Enum):
     COMPLETED = "Выполнено"
     IN_PROGRESS = "В работе"
-    NOT_STARTED = "Не приступали"
-    ON_CONTROL = "Взять на контроль"
+    NOT_STARTED = "Не начато"
+    ON_HOLD = "Приостановлено"
+
+
+class CheckStatusEnum(enum.Enum):
+    APPROVED = "Утверждено"
+    REJECTED = "Отклонено"
+    NEEDS_CORRECTION = "Требует исправлений"
+    UNDER_REVIEW = "На рассмотрении"
 
 
 class RoleEnum(enum.Enum):
@@ -23,103 +28,97 @@ class RoleEnum(enum.Enum):
 
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "USER"
 
     user_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
     password = Column(String(100), nullable=False)
     role = Column(Enum(RoleEnum), nullable=False)
 
-    inspected_objects = relationship(
-        "Object", back_populates="inspector", foreign_keys="Object.inspection_id"
-    )
-    contractor_objects = relationship(
-        "Object", back_populates="contractor", foreign_keys="Object.contractor_id"
-    )
-
 
 class Object(Base):
-    __tablename__ = "objects"
+    __tablename__ = "OBJECT"
 
     object_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(200), nullable=False)
-    inspection_id = Column(Integer, ForeignKey("users.user_id"))  # ID инспектора
-    contractor_id = Column(Integer, ForeignKey("users.user_id"))  # ID подрядчика
+    admin_id = Column(Integer, ForeignKey("USER.user_id"))
+    inspector_id = Column(Integer, ForeignKey("USER.user_id"))
+    contractor_id = Column(Integer, ForeignKey("USER.user_id"))
     status = Column(String(50))
     address = Column(String(300))
 
-    inspector = relationship(
-        "User", back_populates="inspected_objects", foreign_keys=[inspection_id]
-    )
-    contractor = relationship(
-        "User", back_populates="contractor_objects", foreign_keys=[contractor_id]
-    )
-    subobjects = relationship("SubObject", back_populates="object")
+    admin = relationship("User", foreign_keys=[admin_id])
+    inspector = relationship("User", foreign_keys=[inspector_id])
+    contractor = relationship("User", foreign_keys=[contractor_id])
 
 
 class SubObject(Base):
-    __tablename__ = "subobjects"
+    __tablename__ = "SUBOBJECT"
 
     subobject_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(200), nullable=False)
-    object_id = Column(Integer, ForeignKey("objects.object_id"))
-    status_inspector = Column(Enum(StatusEnum))  # Статус от инспектора
-    status_contractor = Column(Enum(StatusEnum))  # Статус от подрядчика (вместо prends)
-    status_admin = Column(Enum(StatusEnum))  # Статус от администратора
+    object_id = Column(Integer, ForeignKey("OBJECT.object_id"))
+    status_inspector = Column(Enum(StatusEnum))
+    status_contractor = Column(Enum(StatusEnum))
+    status_admin = Column(Enum(StatusEnum))
+    prescription_info = Column(Text)
 
-    object = relationship("Object", back_populates="subobjects")
-    checks = relationship("Check", back_populates="subobject")
+    object = relationship("Object")
 
 
 class Check(Base):
-    __tablename__ = "checks"
+    __tablename__ = "CHECK"
 
     check_id = Column(Integer, primary_key=True, autoincrement=True)
     datetime = Column(DateTime, default=datetime.now)
-    photo = Column(String(255))
-    location = Column(Text)
     info = Column(Text)
+    location = Column(Text)
+    subobject_id = Column(Integer, ForeignKey("SUBOBJECT.subobject_id"))
+    status_check = Column(Enum(CheckStatusEnum))
 
-    subobject_id = Column(Integer, ForeignKey("subobjects.subobject_id"))
-    subobject = relationship("SubObject", back_populates="checks")
-    incidents = relationship("Incident", back_populates="check")
-    documents = relationship("Document", back_populates="check")
+    subobject = relationship("SubObject")
 
 
 class Incident(Base):
-    __tablename__ = "incidents"
+    __tablename__ = "INCIDENT"
 
     incident_id = Column(Integer, primary_key=True, autoincrement=True)
     date = Column(DateTime, default=datetime.utcnow)
+    check_id = Column(Integer, ForeignKey("CHECK.check_id"))
     photo = Column(Text)
-    info = Column(Text)
-    check_id = Column(Integer, ForeignKey("checks.check_id"))
+    incident_status = Column(Boolean)
+    incident_info = Column(Text)
+    prescription_type = Column(Text)
 
-    check = relationship("Check", back_populates="incidents")
+    check = relationship("Check")
 
 
 class Document(Base):
-    __tablename__ = "documents"
+    __tablename__ = "DOCUMENT"
 
     document_id = Column(Integer, primary_key=True, autoincrement=True)
-    check_id = Column(Integer, ForeignKey("checks.check_id"))
-    doc_date = Column(Date)
-    file_id = Column(String(100))
+    user_id = Column(Integer, ForeignKey("USER.user_id"))
+    object_id = Column(Integer, ForeignKey("OBJECT.object_id"))
+    doc_type = Column(String(100))  # ID, output
+    doc_number = Column(String(50))
+    doc_date_start = Column(Date)
+    doc_date_end = Column(Date)
+    doc_image_id = Column(String(100))
 
-    check = relationship("Check", back_populates="documents")
+    user = relationship("User")
+    object = relationship("Object")
 
 
 class Material(Base):
-    __tablename__ = "materials"
+    __tablename__ = "MATERIAL"
 
     material_id = Column(Integer, primary_key=True, autoincrement=True)
-    ttn_id = Column(Integer)
-    parsed_data = Column(Text)
+    name = Column(String(200))
+    doc_id = Column(Integer, ForeignKey("DOCUMENT.document_id"))
+    okpd = Column(String(50), nullable=True)
+    amount = Column(Float)
+    uom = Column(String(20))
+    to_be_certified = Column(Boolean)
+    certificate = Column(Text)
 
-
-class Status(Base):
-    __tablename__ = "statuses"
-
-    status_id = Column(Integer, primary_key=True, autoincrement=True)
-    status = Column(Enum(StatusEnum))
-    info = Column(Text)
+    document = relationship("Document")
