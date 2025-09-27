@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import field_validator
 from datetime import datetime, date
-from typing import Optional
+from typing import Optional, Literal
 
 
 class StatusEnum(str, Enum):
@@ -80,7 +80,7 @@ class PasswordResetRequest(BaseModel):
 
 class ObjectBase(BaseModel):
     name: str
-    status: Optional[str] = None
+    status: StatusEnum = StatusEnum.NOT_STARTED
     address: Optional[str] = None
 
 

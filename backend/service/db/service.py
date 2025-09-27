@@ -93,7 +93,7 @@ class ObjectService:
         obj = model.Object(
             name=object_in.name,
             status=object_in.status,
-            inspection_id=object_in.inspection_id,
+            inspection_id=object_in.inspector_id,
             contractor_id=object_in.contractor_id,
         )
         self._session.add(obj)

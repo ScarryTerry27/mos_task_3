@@ -10,40 +10,40 @@ from service.db.service import SubObjectService
 router = APIRouter(prefix="/subobjects", tags=["subobjects"])
 
 
-@router.post("/", response_model=schema.SubObject, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=schema.SubObjectResponse, status_code=status.HTTP_201_CREATED)
 def create_subobject(
     subobject_in: schema.SubObjectCreate, db: Session = Depends(get_db)
-) -> schema.SubObject:
+) -> schema.SubObjectResponse:
     service = SubObjectService(db)
     subobject = service.create_subobject(subobject_in)
-    return schema.SubObject.model_validate(subobject)
+    return schema.SubObjectResponse.model_validate(subobject)
 
 
-@router.get("/", response_model=List[schema.SubObject])
-def list_subobjects(db: Session = Depends(get_db)) -> List[schema.SubObject]:
+@router.get("/", response_model=List[schema.SubObjectResponse])
+def list_subobjects(db: Session = Depends(get_db)) -> List[schema.SubObjectResponse]:
     service = SubObjectService(db)
     subobjects = service.list_subobjects()
-    return [schema.SubObject.model_validate(item) for item in subobjects]
+    return [schema.SubObjectResponse.model_validate(item) for item in subobjects]
 
 
-@router.get("/{subobject_id}", response_model=schema.SubObject)
-def get_subobject(subobject_id: int, db: Session = Depends(get_db)) -> schema.SubObject:
+@router.get("/{subobject_id}", response_model=schema.SubObjectResponse)
+def get_subobject(subobject_id: int, db: Session = Depends(get_db)) -> schema.SubObjectResponse:
     service = SubObjectService(db)
     subobject = service.get_subobject(subobject_id)
     if not subobject:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subobject not found")
-    return schema.SubObject.model_validate(subobject)
+    return schema.SubObjectResponse.model_validate(subobject)
 
 
-@router.put("/{subobject_id}", response_model=schema.SubObject)
+@router.put("/{subobject_id}", response_model=schema.SubObjectResponse)
 def update_subobject(
     subobject_id: int, subobject_in: schema.SubObjectBase, db: Session = Depends(get_db)
-) -> schema.SubObject:
+) -> schema.SubObjectResponse:
     service = SubObjectService(db)
     subobject = service.update_subobject(subobject_id, subobject_in)
     if not subobject:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subobject not found")
-    return schema.SubObject.model_validate(subobject)
+    return schema.SubObjectResponse.model_validate(subobject)
 
 
 @router.delete("/{subobject_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -52,4 +52,3 @@ def delete_subobject(subobject_id: int, db: Session = Depends(get_db)) -> None:
     deleted = service.delete_subobject(subobject_id)
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subobject not found")
-

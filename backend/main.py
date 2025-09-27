@@ -8,7 +8,6 @@ from handlers.documents import router as documents_router
 from handlers.incidents import router as incidents_router
 from handlers.materials import router as materials_router
 from handlers.objects import router as objects_router
-from handlers.statuses import router as statuses_router
 from handlers.subobjects import router as subobjects_router
 from service.db.db import create_tables
 
@@ -22,7 +21,6 @@ app.include_router(checks_router)
 app.include_router(incidents_router)
 app.include_router(documents_router)
 app.include_router(materials_router)
-app.include_router(statuses_router)
 
 
 @app.get("/")
