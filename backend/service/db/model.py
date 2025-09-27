@@ -15,10 +15,8 @@ class StatusEnum(enum.Enum):
 
 
 class CheckStatusEnum(enum.Enum):
-    APPROVED = "Утверждено"
-    REJECTED = "Отклонено"
-    NEEDS_CORRECTION = "Требует исправлений"
-    UNDER_REVIEW = "На рассмотрении"
+    SUCCESSFUL = "Проверка пройдена"
+    INCIDENT = "Инцидент"
 
 
 class RoleEnum(enum.Enum):
