@@ -1,11 +1,12 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from service.db import schema
 from service.db.db import get_db
-from service.db.service import ObjectService
+from service.db.service import ObjectService, UserService
+from service.auth import get_current_user
 
 router = APIRouter(prefix="/objects", tags=["objects"])
 
@@ -18,18 +19,43 @@ def create_object(
     # недостаточность прав
     # так же нужно выполнить проверку всех id в объекте - если данного id не существует - то так же возвращаем ощибку
     # not found на id
+    current_user = get_current_user()
+    if current_user.role is not schema.RoleEnum.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+        )
+
+    user_service = UserService(db)
+    for field_name, user_id in (
+        ("admin", object_in.admin_id),
+        ("inspector", object_in.inspector_id),
+        ("contractor", object_in.contractor_id),
+    ):
+        if not user_service.get_user_by_id(user_id):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"{field_name.capitalize()} not found",
+            )
+
     service = ObjectService(db)
     obj = service.create_object(object_in)
     return schema.Object.model_validate(obj)
 
 
 @router.get("/", response_model=List[schema.Object])
-def list_objects(db: Session = Depends(get_db)) -> List[schema.Object]:
+def list_objects(
+    db: Session = Depends(get_db),
+    limit: int = Query(100, ge=1),
+    offset: int = Query(0, ge=0),
+) -> List[schema.Object]:
     # тут мы должны проверить роль пользователя - если он админ то возвращаем все объекты, если нет - то только объекты,
     # связанные с ним
     # так же добавить оффсет и лимит и считывать изначально из бд по офсеты и лимиту, чтобы не переполнять память
+    current_user = get_current_user()
     service = ObjectService(db)
-    objects = service.list_objects()
+    objects = service.list_objects(
+        limit=limit, offset=offset, role=current_user.role, user_id=current_user.user_id
+    )
     return [schema.Object.model_validate(obj) for obj in objects]
 
 
@@ -38,10 +64,19 @@ def get_object(object_id: int, db: Session = Depends(get_db)) -> schema.Object:
     #  здесь так же реализовать проверку если админ - любой объект можно вернуть, если нет - то только объекты,
     #  привязанные к тебе
     # если ты стучишься не будучи админом к объекты, который тебе недоступен - возвращаем нет прав и соот ошибку
+    current_user = get_current_user()
     service = ObjectService(db)
     obj = service.get_object(object_id)
     if not obj:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Object not found")
+    if current_user.role == schema.RoleEnum.INSPECTOR and obj.inspector_id != current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+        )
+    if current_user.role == schema.RoleEnum.CONTRACTOR and obj.contractor_id != current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+        )
     return schema.Object.model_validate(obj)
 
 
@@ -50,6 +85,24 @@ def update_object(
     object_id: int, object_in: schema.ObjectUpdate, db: Session = Depends(get_db)
 ) -> schema.Object:
     # изменять могут только админы, если стучиться не админ - отправляем ему недостаточность прав
+
+    current_user = get_current_user()
+    if current_user.role is not schema.RoleEnum.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+        )
+
+    user_service = UserService(db)
+    for field_name, user_id in (
+        ("admin", object_in.admin_id),
+        ("inspector", object_in.inspector_id),
+        ("contractor", object_in.contractor_id),
+    ):
+        if user_id is not None and not user_service.get_user_by_id(user_id):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"{field_name.capitalize()} not found",
+            )
 
     service = ObjectService(db)
     obj = service.update_object(object_id, object_in)
@@ -61,6 +114,11 @@ def update_object(
 @router.delete("/{object_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_object(object_id: int, db: Session = Depends(get_db)) -> None:
     # удалять могут только админы, если стучиться не админ - отправляем ему недостаточность прав
+    current_user = get_current_user()
+    if current_user.role is not schema.RoleEnum.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+        )
     service = ObjectService(db)
     deleted = service.delete_object(object_id)
     if not deleted:

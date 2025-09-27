@@ -106,8 +106,17 @@ class ObjectService:
         self._session.refresh(obj)
         return obj
 
-    def list_objects(self) -> List[model.Object]:
-        return self._session.query(model.Object).all()
+    def list_objects(
+        self, *, limit: int, offset: int, role: schema.RoleEnum, user_id: int
+    ) -> List[model.Object]:
+        query = self._session.query(model.Object)
+
+        if role == schema.RoleEnum.INSPECTOR:
+            query = query.filter(model.Object.inspector_id == user_id)
+        elif role == schema.RoleEnum.CONTRACTOR:
+            query = query.filter(model.Object.contractor_id == user_id)
+
+        return query.offset(offset).limit(limit).all()
 
     def get_object(self, object_id: int) -> Optional[model.Object]:
         return (
@@ -186,8 +195,21 @@ class SubObjectService:
         self._session.refresh(subobject)
         return subobject
 
-    def list_subobjects(self) -> List[model.SubObject]:
-        return self._session.query(model.SubObject).all()
+    def list_subobjects(
+        self, *, limit: int, offset: int, role: schema.RoleEnum, user_id: int
+    ) -> List[model.SubObject]:
+        query = self._session.query(model.SubObject)
+
+        if role in (schema.RoleEnum.INSPECTOR, schema.RoleEnum.CONTRACTOR):
+            query = query.join(
+                model.Object, model.SubObject.object_id == model.Object.object_id
+            )
+            if role == schema.RoleEnum.INSPECTOR:
+                query = query.filter(model.Object.inspector_id == user_id)
+            else:
+                query = query.filter(model.Object.contractor_id == user_id)
+
+        return query.offset(offset).limit(limit).all()
 
     def get_subobject(self, subobject_id: int) -> Optional[model.SubObject]:
         return (
