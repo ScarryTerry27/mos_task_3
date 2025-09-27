@@ -37,7 +37,7 @@ def get_material(material_id: int, db: Session = Depends(get_db)) -> schema.Mate
 
 @router.put("/{material_id}", response_model=schema.Material)
 def update_material(
-    material_id: int, material_in: schema.MaterialBase, db: Session = Depends(get_db)
+    material_id: int, material_in: schema.MaterialUpdate, db: Session = Depends(get_db)
 ) -> schema.Material:
     service = MaterialService(db)
     material = service.update_material(material_id, material_in)
