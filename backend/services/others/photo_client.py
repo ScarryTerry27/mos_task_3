@@ -4,11 +4,11 @@ from datetime import date, timedelta
 from typing import List, Tuple
 from uuid import uuid4
 
-from service.db import schema
+from services.db import schema
 
 
 def analyze_photo(image_bytes: bytes) -> Tuple[schema.DocumentBase, List[schema.MaterialBase]]:
-    """Mock photo analysis service that returns document and material metadata."""
+    """Mock photo analysis services that returns document and material metadata."""
 
     today = date.today()
     document_data = schema.DocumentBase(

@@ -3,7 +3,7 @@ from typing import List, Optional
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from service.db import model, schema
+from services.db import model, schema
 
 
 class UserService:
@@ -107,7 +107,7 @@ class ObjectService:
         return obj
 
     def list_objects(
-        self, *, limit: int, offset: int, role: schema.RoleEnum, user_id: int
+            self, *, limit: int, offset: int, role: schema.RoleEnum, user_id: int
     ) -> List[model.Object]:
         query = self._session.query(model.Object)
 
@@ -126,7 +126,7 @@ class ObjectService:
         )
 
     def update_object(
-        self, object_id: int, object_in: schema.ObjectUpdate
+            self, object_id: int, object_in: schema.ObjectUpdate
     ) -> Optional[model.Object]:
         obj = self.get_object(object_id)
         if not obj:
@@ -194,7 +194,7 @@ class SubObjectService:
         return subobject
 
     def list_subobjects(
-        self, *, limit: int, offset: int, role: schema.RoleEnum, user_id: int
+            self, *, limit: int, offset: int, role: schema.RoleEnum, user_id: int
     ) -> List[model.SubObject]:
         query = self._session.query(model.SubObject)
 
@@ -217,7 +217,7 @@ class SubObjectService:
         )
 
     def update_subobject(
-        self, subobject_id: int, subobject_in: schema.SubObjectUpdate
+            self, subobject_id: int, subobject_in: schema.SubObjectUpdate
     ) -> Optional[model.SubObject]:
         subobject = self.get_subobject(subobject_id)
         if not subobject:
@@ -294,7 +294,7 @@ class CheckService:
         )
 
     def update_check(
-        self, check_id: int, check_in: schema.CheckUpdate
+            self, check_id: int, check_in: schema.CheckUpdate
     ) -> Optional[model.Check]:
         check = self.get_check(check_id)
         if not check:
@@ -361,7 +361,7 @@ class IncidentService:
         )
 
     def update_incident(
-        self, incident_id: int, incident_in: schema.IncidentUpdate
+            self, incident_id: int, incident_in: schema.IncidentUpdate
     ) -> Optional[model.Incident]:
         incident = self.get_incident(incident_id)
         if not incident:
@@ -427,7 +427,7 @@ class DocumentService:
         )
 
     def update_document(
-        self, document_id: int, document_in: schema.DocumentUpdate
+            self, document_id: int, document_in: schema.DocumentUpdate
     ) -> Optional[model.Document]:
         document = self.get_document(document_id)
         if not document:
@@ -493,7 +493,7 @@ class MaterialService:
         )
 
     def update_material(
-        self, material_id: int, material_in: schema.MaterialUpdate
+            self, material_id: int, material_in: schema.MaterialUpdate
     ) -> Optional[model.Material]:
         material = self.get_material(material_id)
         if not material:
@@ -523,60 +523,5 @@ class MaterialService:
         if not material:
             return False
         self._session.delete(material)
-        self._session.commit()
-        return True
-
-
-class StatusService:
-    """Service layer for CRUD operations on :class:`model.Status`."""
-
-    def __init__(self, session: Session) -> None:
-        self._session = session
-
-    def create_status(self, status_in: schema.StatusCreate) -> model.Status:
-        status = model.Status(
-            status=model.StatusEnum(status_in.status.value),
-            info=status_in.info,
-        )
-        self._session.add(status)
-        self._session.commit()
-        self._session.refresh(status)
-        return status
-
-    def list_statuses(self) -> List[model.Status]:
-        return self._session.query(model.Status).all()
-
-    def get_status(self, status_id: int) -> Optional[model.Status]:
-        return (
-            self._session.query(model.Status)
-            .filter(model.Status.status_id == status_id)
-            .first()
-        )
-
-    def update_status(
-        self, status_id: int, status_in: schema.StatusUpdate
-    ) -> Optional[model.Status]:
-        status = self.get_status(status_id)
-        if not status:
-            return None
-
-        if "status" in status_in.model_fields_set:
-            status.status = (
-                model.StatusEnum(status_in.status.value)
-                if status_in.status is not None
-                else None
-            )
-        if "info" in status_in.model_fields_set:
-            status.info = status_in.info
-        self._session.add(status)
-        self._session.commit()
-        self._session.refresh(status)
-        return status
-
-    def delete_status(self, status_id: int) -> bool:
-        status = self.get_status(status_id)
-        if not status:
-            return False
-        self._session.delete(status)
         self._session.commit()
         return True

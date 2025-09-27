@@ -1,4 +1,4 @@
-from service.db import schema
+from services.db import schema
 
 
 def get_current_user() -> schema.User:

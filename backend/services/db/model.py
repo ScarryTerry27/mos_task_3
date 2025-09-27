@@ -34,13 +34,6 @@ class DocTypeEnum(enum.Enum):
     TTN = "ТТН"
     OUTPUT = "output"
 
-class Status(Base):
-    __tablename__ = "STATUS"
-
-    status_id = Column(Integer, primary_key=True, autoincrement=True)
-    status = Column(Enum(StatusEnum), nullable=False)
-    info = Column(Text)
-
 
 class User(Base):
     __tablename__ = "USER"

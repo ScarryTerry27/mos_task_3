@@ -3,10 +3,10 @@ from typing import List
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
-from service.db import schema
-from service.db.db import get_db
-from service.db.service import DocumentService, MaterialService
-from service.others.photo_client import analyze_photo
+from services.db import schema
+from services.db.db import get_db
+from services.db.service import DocumentService, MaterialService
+from services.others.photo_client import analyze_photo
 
 router = APIRouter(prefix="/others", tags=["others"])
 
@@ -22,7 +22,7 @@ async def process_photo(
     photo: UploadFile = File(...),
     db: Session = Depends(get_db),
 ) -> schema.PhotoProcessingResponse:
-    """Accept a photo, forward it to the external service and persist the results."""
+    """Accept a photo, forward it to the external services and persist the results."""
 
     if photo.content_type not in {"image/jpeg", "image/png", "image/jpg"}:
         raise HTTPException(
