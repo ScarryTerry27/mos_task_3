@@ -98,7 +98,6 @@ class ObjectService:
             admin_id=object_in.admin_id,
             inspector_id=object_in.inspector_id,
             contractor_id=object_in.contractor_id,
-            inspection_id=object_in.inspection_id,
             status=object_in.status,
             address=object_in.address,
         )

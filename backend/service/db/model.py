@@ -59,7 +59,6 @@ class Object(Base):
     admin_id = Column(Integer, ForeignKey("USER.user_id"))
     inspector_id = Column(Integer, ForeignKey("USER.user_id"))
     contractor_id = Column(Integer, ForeignKey("USER.user_id"))
-    inspection_id = Column(Integer, nullable=True)
     status = Column(String(50))
     address = Column(String(300))
 

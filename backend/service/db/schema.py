@@ -84,9 +84,8 @@ class PasswordResetRequest(BaseModel):
 
 class ObjectBase(BaseModel):
     name: str
-    status: Optional[str] = None
+    status: StatusEnum = StatusEnum.NOT_STARTED
     address: Optional[str] = None
-    inspection_id: Optional[int] = None
 
 
 class ObjectCreate(ObjectBase):
@@ -109,9 +108,9 @@ ObjectResponse = Object
 
 class SubObjectBase(BaseModel):
     name: str
-    status_inspector: Optional[StatusEnum] = None
-    status_contractor: Optional[StatusEnum] = None
-    status_admin: Optional[StatusEnum] = None
+    status_inspector: Optional[StatusEnum] = StatusEnum.NOT_STARTED
+    status_contractor: Optional[StatusEnum] = StatusEnum.NOT_STARTED
+    status_admin: Optional[StatusEnum] = StatusEnum.NOT_STARTED
     prescription_info: Optional[str] = None
 
 
@@ -236,11 +235,11 @@ class ObjectUpdate(BaseModel):
 
 class SubObjectUpdate(BaseModel):
     name: Optional[str] = None
-    status_inspector: Optional[StatusEnum] = None
-    status_contractor: Optional[StatusEnum] = None
-    status_admin: Optional[StatusEnum] = None
+    status_inspector: Optional[StatusEnum] = StatusEnum.NOT_STARTED
+    status_contractor: Optional[StatusEnum] = StatusEnum.NOT_STARTED
+    status_admin: Optional[StatusEnum] = StatusEnum.NOT_STARTED
     prescription_info: Optional[str] = None
-    object_id: Optional[int] = None
+    object_id: int
 
 
 class CheckUpdate(BaseModel):
