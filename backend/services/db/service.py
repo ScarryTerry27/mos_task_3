@@ -283,8 +283,19 @@ class CheckService:
         self._session.refresh(check)
         return check
 
-    def list_checks(self) -> List[model.Check]:
-        return self._session.query(model.Check).all()
+    def list_checks(self, *, role: schema.RoleEnum, user_id: int) -> List[model.Check]:
+        query = self._session.query(model.Check)
+
+        if role == schema.RoleEnum.INSPECTOR:
+            query = (
+                query.join(
+                    model.SubObject, model.Check.subobject_id == model.SubObject.subobject_id
+                )
+                .join(model.Object, model.SubObject.object_id == model.Object.object_id)
+                .filter(model.Object.inspector_id == user_id)
+            )
+
+        return query.all()
 
     def get_check(self, check_id: int) -> Optional[model.Check]:
         return (
