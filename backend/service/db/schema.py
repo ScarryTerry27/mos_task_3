@@ -1,6 +1,7 @@
 import enum
 from enum import Enum
 from pydantic import BaseModel
+from pydantic import ConfigDict
 from datetime import datetime, date
 from typing import Optional
 
@@ -54,15 +55,26 @@ class DocTypeEnum(str, Enum):
 # Базовые схемы для всех моделей
 class UserBase(BaseModel):
     name: str
-    role: str
+    role: RoleEnum
 
 
 class UserCreate(UserBase):
     password: str
 
 
-class UserResponse(UserBase):
+class User(UserBase):
     user_id: int
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserLogin(BaseModel):
+    name: str
+    password: str
+
+
+class PasswordResetRequest(BaseModel):
+    name: str
+    new_password: str
 
 
 class ObjectBase(BaseModel):
@@ -175,7 +187,7 @@ class MaterialResponse(MaterialBase):
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     password: Optional[str] = None
-    role: Optional[str] = None
+    role: Optional[RoleEnum] = None
 
 
 class ObjectUpdate(BaseModel):
