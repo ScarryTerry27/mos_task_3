@@ -226,9 +226,13 @@ class CheckService:
     def create_check(self, check_in: schema.CheckCreate) -> model.Check:
         check = model.Check(
             subobject_id=check_in.subobject_id,
-            photo=check_in.photo,
             location=check_in.location,
             info=check_in.info,
+            status_check=(
+                model.CheckStatusEnum(check_in.status_check.value)
+                if check_in.status_check
+                else None
+            ),
         )
         self._session.add(check)
         self._session.commit()
@@ -252,9 +256,13 @@ class CheckService:
         if not check:
             return None
 
-        check.photo = check_in.photo
         check.location = check_in.location
         check.info = check_in.info
+        check.status_check = (
+            model.CheckStatusEnum(check_in.status_check.value)
+            if check_in.status_check
+            else None
+        )
         self._session.add(check)
         self._session.commit()
         self._session.refresh(check)

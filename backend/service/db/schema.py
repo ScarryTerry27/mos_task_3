@@ -116,17 +116,18 @@ class SubObjectResponse(SubObjectBase):
 class CheckBase(BaseModel):
     info: Optional[str] = None
     location: Optional[str] = None
-    status_check: Optional[str] = None
+    status_check: Optional[CheckStatusEnum] = None
 
 
 class CheckCreate(CheckBase):
     subobject_id: int
 
 
-class CheckResponse(CheckBase):
+class Check(CheckCreate):
     check_id: int
-    subobject_id: int
     datetime: datetime
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class IncidentBase(BaseModel):
@@ -211,7 +212,7 @@ class SubObjectUpdate(BaseModel):
 class CheckUpdate(BaseModel):
     info: Optional[str] = None
     location: Optional[str] = None
-    status_check: Optional[str] = None
+    status_check: Optional[CheckStatusEnum] = None
     subobject_id: Optional[int] = None
 
 
