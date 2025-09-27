@@ -2,6 +2,7 @@ import enum
 from enum import Enum
 from pydantic import BaseModel
 from pydantic import ConfigDict
+from pydantic import field_validator
 from datetime import datetime, date
 from typing import Optional
 
@@ -154,16 +155,25 @@ class DocumentBase(BaseModel):
     doc_date_end: date
     doc_image_id: str
 
+    @field_validator("doc_type", mode="before")
+    @classmethod
+    def _convert_doc_type(cls, value):
+        if isinstance(value, enum.Enum):
+            return value.value
+        return value
+
 
 class DocumentCreate(DocumentBase):
     user_id: int
     object_id: int
 
 
-class DocumentResponse(DocumentBase):
+class Document(DocumentBase):
     document_id: int
     user_id: int
     object_id: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MaterialBase(BaseModel):
@@ -179,9 +189,11 @@ class MaterialCreate(MaterialBase):
     doc_id: int
 
 
-class MaterialResponse(MaterialBase):
+class Material(MaterialBase):
     material_id: int
     doc_id: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Схемы для обновления (все поля опциональны)
@@ -225,7 +237,7 @@ class IncidentUpdate(BaseModel):
 
 
 class DocumentUpdate(BaseModel):
-    doc_type: Optional[str] = None
+    doc_type: Optional[DocTypeEnum] = None
     doc_number: Optional[str] = None
     doc_date_start: Optional[date] = None
     doc_date_end: Optional[date] = None

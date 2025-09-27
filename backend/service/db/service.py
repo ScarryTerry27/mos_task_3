@@ -335,9 +335,13 @@ class DocumentService:
 
     def create_document(self, document_in: schema.DocumentCreate) -> model.Document:
         document = model.Document(
-            check_id=document_in.check_id,
-            file_id=document_in.file_id,
-            doc_date=document_in.doc_date,
+            user_id=document_in.user_id,
+            object_id=document_in.object_id,
+            doc_type=model.DocTypeEnum(document_in.doc_type.value),
+            doc_number=document_in.doc_number,
+            doc_date_start=document_in.doc_date_start,
+            doc_date_end=document_in.doc_date_end,
+            doc_image_id=document_in.doc_image_id,
         )
         self._session.add(document)
         self._session.commit()
@@ -355,14 +359,26 @@ class DocumentService:
         )
 
     def update_document(
-        self, document_id: int, document_in: schema.DocumentBase
+        self, document_id: int, document_in: schema.DocumentUpdate
     ) -> Optional[model.Document]:
         document = self.get_document(document_id)
         if not document:
             return None
 
-        document.file_id = document_in.file_id
-        document.doc_date = document_in.doc_date
+        if document_in.user_id is not None:
+            document.user_id = document_in.user_id
+        if document_in.object_id is not None:
+            document.object_id = document_in.object_id
+        if document_in.doc_type is not None:
+            document.doc_type = model.DocTypeEnum(document_in.doc_type.value)
+        if document_in.doc_number is not None:
+            document.doc_number = document_in.doc_number
+        if document_in.doc_date_start is not None:
+            document.doc_date_start = document_in.doc_date_start
+        if document_in.doc_date_end is not None:
+            document.doc_date_end = document_in.doc_date_end
+        if document_in.doc_image_id is not None:
+            document.doc_image_id = document_in.doc_image_id
         self._session.add(document)
         self._session.commit()
         self._session.refresh(document)
@@ -385,8 +401,13 @@ class MaterialService:
 
     def create_material(self, material_in: schema.MaterialCreate) -> model.Material:
         material = model.Material(
-            ttn_id=material_in.ttn_id,
-            parsed_data=material_in.parsed_data,
+            name=material_in.name,
+            doc_id=material_in.doc_id,
+            okpd=material_in.okpd,
+            amount=material_in.amount,
+            uom=material_in.uom,
+            to_be_certified=material_in.to_be_certified,
+            certificate=material_in.certificate,
         )
         self._session.add(material)
         self._session.commit()
@@ -404,14 +425,26 @@ class MaterialService:
         )
 
     def update_material(
-        self, material_id: int, material_in: schema.MaterialBase
+        self, material_id: int, material_in: schema.MaterialUpdate
     ) -> Optional[model.Material]:
         material = self.get_material(material_id)
         if not material:
             return None
 
-        material.ttn_id = material_in.ttn_id
-        material.parsed_data = material_in.parsed_data
+        if material_in.name is not None:
+            material.name = material_in.name
+        if material_in.doc_id is not None:
+            material.doc_id = material_in.doc_id
+        if material_in.okpd is not None:
+            material.okpd = material_in.okpd
+        if material_in.amount is not None:
+            material.amount = material_in.amount
+        if material_in.uom is not None:
+            material.uom = material_in.uom
+        if material_in.to_be_certified is not None:
+            material.to_be_certified = material_in.to_be_certified
+        if material_in.certificate is not None:
+            material.certificate = material_in.certificate
         self._session.add(material)
         self._session.commit()
         self._session.refresh(material)
