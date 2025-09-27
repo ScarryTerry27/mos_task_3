@@ -37,7 +37,7 @@ def get_document(document_id: int, db: Session = Depends(get_db)) -> schema.Docu
 
 @router.put("/{document_id}", response_model=schema.Document)
 def update_document(
-    document_id: int, document_in: schema.DocumentBase, db: Session = Depends(get_db)
+    document_id: int, document_in: schema.DocumentUpdate, db: Session = Depends(get_db)
 ) -> schema.Document:
     service = DocumentService(db)
     document = service.update_document(document_id, document_in)
