@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from service.db.model import Base
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./build_ai_2025.db"

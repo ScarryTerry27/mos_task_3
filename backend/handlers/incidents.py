@@ -37,7 +37,7 @@ def get_incident(incident_id: int, db: Session = Depends(get_db)) -> schema.Inci
 
 @router.put("/{incident_id}", response_model=schema.Incident)
 def update_incident(
-    incident_id: int, incident_in: schema.IncidentBase, db: Session = Depends(get_db)
+    incident_id: int, incident_in: schema.IncidentUpdate, db: Session = Depends(get_db)
 ) -> schema.Incident:
     service = IncidentService(db)
     incident = service.update_incident(incident_id, incident_in)

@@ -37,7 +37,7 @@ def get_subobject(subobject_id: int, db: Session = Depends(get_db)) -> schema.Su
 
 @router.put("/{subobject_id}", response_model=schema.SubObject)
 def update_subobject(
-    subobject_id: int, subobject_in: schema.SubObjectBase, db: Session = Depends(get_db)
+    subobject_id: int, subobject_in: schema.SubObjectUpdate, db: Session = Depends(get_db)
 ) -> schema.SubObject:
     service = SubObjectService(db)
     subobject = service.update_subobject(subobject_id, subobject_in)

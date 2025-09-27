@@ -37,7 +37,7 @@ def get_check(check_id: int, db: Session = Depends(get_db)) -> schema.Check:
 
 @router.put("/{check_id}", response_model=schema.Check)
 def update_check(
-    check_id: int, check_in: schema.CheckBase, db: Session = Depends(get_db)
+    check_id: int, check_in: schema.CheckUpdate, db: Session = Depends(get_db)
 ) -> schema.Check:
     service = CheckService(db)
     check = service.update_check(check_id, check_in)

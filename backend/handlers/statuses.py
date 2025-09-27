@@ -37,7 +37,7 @@ def get_status(status_id: int, db: Session = Depends(get_db)) -> schema.Status:
 
 @router.put("/{status_id}", response_model=schema.Status)
 def update_status(
-    status_id: int, status_in: schema.StatusBase, db: Session = Depends(get_db)
+    status_id: int, status_in: schema.StatusUpdate, db: Session = Depends(get_db)
 ) -> schema.Status:
     service = StatusService(db)
     status_obj = service.update_status(status_id, status_in)

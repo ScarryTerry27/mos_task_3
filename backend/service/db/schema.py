@@ -1,10 +1,9 @@
 import enum
 from enum import Enum
-from pydantic import BaseModel
-from pydantic import ConfigDict
-from pydantic import field_validator
-from datetime import datetime, date
+from datetime import date, datetime
 from typing import Optional
+
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class StatusEnum(str, Enum):
@@ -109,9 +108,9 @@ ObjectResponse = Object
 
 class SubObjectBase(BaseModel):
     name: str
-    status_inspector: Optional[str] = None
-    status_contractor: Optional[str] = None
-    status_admin: Optional[str] = None
+    status_inspector: Optional[StatusEnum] = None
+    status_contractor: Optional[StatusEnum] = None
+    status_admin: Optional[StatusEnum] = None
     prescription_info: Optional[str] = None
 
 
@@ -235,9 +234,9 @@ class ObjectUpdate(BaseModel):
 
 class SubObjectUpdate(BaseModel):
     name: Optional[str] = None
-    status_inspector: Optional[str] = None
-    status_contractor: Optional[str] = None
-    status_admin: Optional[str] = None
+    status_inspector: Optional[StatusEnum] = None
+    status_contractor: Optional[StatusEnum] = None
+    status_admin: Optional[StatusEnum] = None
     prescription_info: Optional[str] = None
     object_id: Optional[int] = None
 
@@ -291,3 +290,53 @@ class TokenResponse(BaseModel):
 # Базовая схема ответа
 class MessageResponse(BaseModel):
     message: str
+
+
+__all__ = [
+    "StatusEnum",
+    "StatusBase",
+    "StatusCreate",
+    "Status",
+    "StatusResponse",
+    "StatusUpdate",
+    "CheckStatusEnum",
+    "RoleEnum",
+    "PrescriptionTypeEnum",
+    "DocTypeEnum",
+    "UserBase",
+    "UserCreate",
+    "User",
+    "UserLogin",
+    "PasswordResetRequest",
+    "ObjectBase",
+    "ObjectCreate",
+    "Object",
+    "ObjectResponse",
+    "ObjectUpdate",
+    "SubObjectBase",
+    "SubObjectCreate",
+    "SubObject",
+    "SubObjectResponse",
+    "SubObjectUpdate",
+    "CheckBase",
+    "CheckCreate",
+    "Check",
+    "CheckUpdate",
+    "IncidentBase",
+    "IncidentCreate",
+    "Incident",
+    "IncidentResponse",
+    "IncidentUpdate",
+    "DocumentBase",
+    "DocumentCreate",
+    "Document",
+    "DocumentUpdate",
+    "MaterialBase",
+    "MaterialCreate",
+    "Material",
+    "MaterialUpdate",
+    "UserUpdate",
+    "LoginRequest",
+    "TokenResponse",
+    "MessageResponse",
+]

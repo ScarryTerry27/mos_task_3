@@ -40,15 +40,18 @@ class UserService:
         """Return a user by its name."""
         return self._session.query(model.User).filter(model.User.name == name).first()
 
-    def update_user(self, user_id: int, user_in: schema.UserBase) -> Optional[model.User]:
+    def update_user(self, user_id: int, user_in: schema.UserUpdate) -> Optional[model.User]:
         """Update user fields."""
         user = self.get_user_by_id(user_id)
         if not user:
             return None
 
-        user.name = user_in.name
-        user.password = user_in.password
-        user.role = model.RoleEnum(user_in.role.value)
+        if user_in.name is not None:
+            user.name = user_in.name
+        if user_in.password is not None:
+            user.password = user_in.password
+        if user_in.role is not None:
+            user.role = model.RoleEnum(user_in.role.value)
         self._session.add(user)
         self._session.commit()
         self._session.refresh(user)
@@ -92,9 +95,11 @@ class ObjectService:
     def create_object(self, object_in: schema.ObjectCreate) -> model.Object:
         obj = model.Object(
             name=object_in.name,
-            status=object_in.status,
-            inspection_id=object_in.inspection_id,
+            admin_id=object_in.admin_id,
+            inspector_id=object_in.inspector_id,
             contractor_id=object_in.contractor_id,
+            status=object_in.status,
+            address=object_in.address,
         )
         self._session.add(obj)
         self._session.commit()
@@ -112,16 +117,24 @@ class ObjectService:
         )
 
     def update_object(
-        self, object_id: int, object_in: schema.ObjectCreate
+        self, object_id: int, object_in: schema.ObjectUpdate
     ) -> Optional[model.Object]:
         obj = self.get_object(object_id)
         if not obj:
             return None
 
-        obj.name = object_in.name
-        obj.status = object_in.status
-        obj.inspection_id = object_in.inspection_id
-        obj.contractor_id = object_in.contractor_id
+        if object_in.name is not None:
+            obj.name = object_in.name
+        if object_in.admin_id is not None:
+            obj.admin_id = object_in.admin_id
+        if object_in.inspector_id is not None:
+            obj.inspector_id = object_in.inspector_id
+        if object_in.contractor_id is not None:
+            obj.contractor_id = object_in.contractor_id
+        if object_in.status is not None:
+            obj.status = object_in.status
+        if object_in.address is not None:
+            obj.address = object_in.address
         self._session.add(obj)
         self._session.commit()
         self._session.refresh(obj)
@@ -164,6 +177,7 @@ class SubObjectService:
                 if subobject_in.status_admin
                 else None
             ),
+            prescription_info=subobject_in.prescription_info,
         )
         self._session.add(subobject)
         self._session.commit()
@@ -181,28 +195,36 @@ class SubObjectService:
         )
 
     def update_subobject(
-        self, subobject_id: int, subobject_in: schema.SubObjectBase
+        self, subobject_id: int, subobject_in: schema.SubObjectUpdate
     ) -> Optional[model.SubObject]:
         subobject = self.get_subobject(subobject_id)
         if not subobject:
             return None
 
-        subobject.name = subobject_in.name
-        subobject.status_inspector = (
-            model.StatusEnum(subobject_in.status_inspector.value)
-            if subobject_in.status_inspector
-            else None
-        )
-        subobject.status_contractor = (
-            model.StatusEnum(subobject_in.status_contractor.value)
-            if subobject_in.status_contractor
-            else None
-        )
-        subobject.status_admin = (
-            model.StatusEnum(subobject_in.status_admin.value)
-            if subobject_in.status_admin
-            else None
-        )
+        if "name" in subobject_in.model_fields_set:
+            subobject.name = subobject_in.name
+        if "status_inspector" in subobject_in.model_fields_set:
+            subobject.status_inspector = (
+                model.StatusEnum(subobject_in.status_inspector.value)
+                if subobject_in.status_inspector is not None
+                else None
+            )
+        if "status_contractor" in subobject_in.model_fields_set:
+            subobject.status_contractor = (
+                model.StatusEnum(subobject_in.status_contractor.value)
+                if subobject_in.status_contractor is not None
+                else None
+            )
+        if "status_admin" in subobject_in.model_fields_set:
+            subobject.status_admin = (
+                model.StatusEnum(subobject_in.status_admin.value)
+                if subobject_in.status_admin is not None
+                else None
+            )
+        if "prescription_info" in subobject_in.model_fields_set:
+            subobject.prescription_info = subobject_in.prescription_info
+        if "object_id" in subobject_in.model_fields_set:
+            subobject.object_id = subobject_in.object_id
         self._session.add(subobject)
         self._session.commit()
         self._session.refresh(subobject)
@@ -250,19 +272,24 @@ class CheckService:
         )
 
     def update_check(
-        self, check_id: int, check_in: schema.CheckBase
+        self, check_id: int, check_in: schema.CheckUpdate
     ) -> Optional[model.Check]:
         check = self.get_check(check_id)
         if not check:
             return None
 
-        check.location = check_in.location
-        check.info = check_in.info
-        check.status_check = (
-            model.CheckStatusEnum(check_in.status_check.value)
-            if check_in.status_check
-            else None
-        )
+        if "location" in check_in.model_fields_set:
+            check.location = check_in.location
+        if "info" in check_in.model_fields_set:
+            check.info = check_in.info
+        if "status_check" in check_in.model_fields_set:
+            check.status_check = (
+                model.CheckStatusEnum(check_in.status_check.value)
+                if check_in.status_check is not None
+                else None
+            )
+        if "subobject_id" in check_in.model_fields_set:
+            check.subobject_id = check_in.subobject_id
         self._session.add(check)
         self._session.commit()
         self._session.refresh(check)
@@ -286,8 +313,15 @@ class IncidentService:
     def create_incident(self, incident_in: schema.IncidentCreate) -> model.Incident:
         incident = model.Incident(
             check_id=incident_in.check_id,
-            info=incident_in.info,
             photo=incident_in.photo,
+            incident_status=incident_in.incident_status,
+            incident_info=incident_in.incident_info,
+            prescription_type=
+            (
+                model.PrescriptionTypeEnum(incident_in.prescription_type.value)
+                if incident_in.prescription_type
+                else None
+            ),
         )
         self._session.add(incident)
         self._session.commit()
@@ -305,14 +339,26 @@ class IncidentService:
         )
 
     def update_incident(
-        self, incident_id: int, incident_in: schema.IncidentBase
+        self, incident_id: int, incident_in: schema.IncidentUpdate
     ) -> Optional[model.Incident]:
         incident = self.get_incident(incident_id)
         if not incident:
             return None
 
-        incident.info = incident_in.info
-        incident.photo = incident_in.photo
+        if "photo" in incident_in.model_fields_set:
+            incident.photo = incident_in.photo
+        if "incident_status" in incident_in.model_fields_set:
+            incident.incident_status = incident_in.incident_status
+        if "incident_info" in incident_in.model_fields_set:
+            incident.incident_info = incident_in.incident_info
+        if "prescription_type" in incident_in.model_fields_set:
+            incident.prescription_type = (
+                model.PrescriptionTypeEnum(incident_in.prescription_type.value)
+                if incident_in.prescription_type is not None
+                else None
+            )
+        if "check_id" in incident_in.model_fields_set:
+            incident.check_id = incident_in.check_id
         self._session.add(incident)
         self._session.commit()
         self._session.refresh(incident)
@@ -492,9 +538,13 @@ class StatusService:
         if not status:
             return None
 
-        if status_in.status is not None:
-            status.status = model.StatusEnum(status_in.status.value)
-        if status_in.info is not None:
+        if "status" in status_in.model_fields_set:
+            status.status = (
+                model.StatusEnum(status_in.status.value)
+                if status_in.status is not None
+                else None
+            )
+        if "info" in status_in.model_fields_set:
             status.info = status_in.info
         self._session.add(status)
         self._session.commit()
