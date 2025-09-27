@@ -1,12 +1,13 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from services.auth import get_current_user
 from services.db import schema
 from services.db.db import get_db
-from services.db.service import CheckService, ObjectService, SubObjectService
+from services.db.service import CheckService, IncidentService, ObjectService, SubObjectService
+from services.others.video_client import analyze_video
 
 router = APIRouter(prefix="/checks", tags=["checks"])
 
@@ -126,3 +127,70 @@ def delete_check(check_id: int, db: Session = Depends(get_db)) -> None:
     deleted = service.delete_check(check_id)
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Check not found")
+
+
+@router.post(
+    "/process-video",
+    response_model=schema.VideoProcessingResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def process_video(
+    subobject_id: int = Form(...),
+    video: UploadFile = File(...),
+    db: Session = Depends(get_db),
+) -> schema.VideoProcessingResponse:
+    """Accept a video, forward it to the analysis service and persist results."""
+
+    current_user = get_current_user()
+    if current_user.role is not schema.RoleEnum.INSPECTOR:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only inspectors are allowed to process videos",
+        )
+
+    if subobject_id <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="subobject_id must be a positive integer",
+        )
+
+    if video.content_type not in {"video/mp4", "video/mpeg", "video/quicktime"}:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unsupported file type. Only MP4, MPEG and QuickTime are allowed.",
+        )
+
+    _ensure_subobject_access(db, subobject_id, current_user)
+
+    video_bytes = await video.read()
+    check_data, incidents_data = analyze_video(video_bytes)
+
+    check_create = schema.CheckCreate(
+        subobject_id=subobject_id,
+        info=check_data.info,
+        location=check_data.location,
+        status_check=check_data.status_check,
+    )
+
+    check_service = CheckService(db)
+    incident_service = IncidentService(db)
+
+    created_check = check_service.create_check(check_create)
+    saved_incidents: list[schema.Incident] = []
+    for incident_data in incidents_data:
+        incident_create = schema.IncidentCreate(
+            check_id=created_check.check_id,
+            photo=incident_data.photo,
+            incident_status=incident_data.incident_status,
+            incident_info=incident_data.incident_info,
+            prescription_type=incident_data.prescription_type,
+        )
+        incident = incident_service.create_incident(incident_create)
+        saved_incidents.append(schema.Incident.model_validate(incident))
+
+    response = schema.VideoProcessingResponse(
+        check=schema.Check.model_validate(created_check),
+        incidents=saved_incidents,
+    )
+
+    return response

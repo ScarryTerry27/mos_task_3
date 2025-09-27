@@ -221,6 +221,11 @@ class PhotoProcessingResponse(BaseModel):
     materials: list[Material]
 
 
+class VideoProcessingResponse(BaseModel):
+    check: Check
+    incidents: list[Incident]
+
+
 # Схемы для обновления (все поля опциональны)
 class UserUpdate(BaseModel):
     name: Optional[str] = None
