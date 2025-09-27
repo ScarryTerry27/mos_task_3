@@ -1,8 +1,9 @@
 import enum
 from enum import Enum
-from pydantic import BaseModel
-from datetime import datetime, date
+from datetime import date, datetime
 from typing import Optional
+
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class StatusEnum(str, Enum):
@@ -10,6 +11,29 @@ class StatusEnum(str, Enum):
     IN_PROGRESS = "В работе"
     NOT_STARTED = "Не начато"
     ON_HOLD = "Приостановлено"
+
+
+class StatusBase(BaseModel):
+    status: StatusEnum
+    info: Optional[str] = None
+
+
+class StatusCreate(StatusBase):
+    pass
+
+
+class Status(StatusBase):
+    status_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+StatusResponse = Status
+
+
+class StatusUpdate(BaseModel):
+    status: Optional[StatusEnum] = None
+    info: Optional[str] = None
 
 
 class CheckStatusEnum(str, Enum):
@@ -36,15 +60,26 @@ class DocTypeEnum(str, Enum):
 # Базовые схемы для всех моделей
 class UserBase(BaseModel):
     name: str
-    role: str
+    role: RoleEnum
 
 
 class UserCreate(UserBase):
     password: str
 
 
-class UserResponse(UserBase):
+class User(UserBase):
     user_id: int
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserLogin(BaseModel):
+    name: str
+    password: str
+
+
+class PasswordResetRequest(BaseModel):
+    name: str
+    new_password: str
 
 
 class ObjectBase(BaseModel):
@@ -59,18 +94,23 @@ class ObjectCreate(ObjectBase):
     contractor_id: int
 
 
-class ObjectResponse(ObjectBase):
+class Object(ObjectBase):
     object_id: int
     admin_id: int
     inspector_id: int
     contractor_id: int
 
+    model_config = ConfigDict(from_attributes=True)
+
+
+ObjectResponse = Object
+
 
 class SubObjectBase(BaseModel):
     name: str
-    status_inspector: Optional[str] = None
-    status_contractor: Optional[str] = None
-    status_admin: Optional[str] = None
+    status_inspector: Optional[StatusEnum] = None
+    status_contractor: Optional[StatusEnum] = None
+    status_admin: Optional[StatusEnum] = None
     prescription_info: Optional[str] = None
 
 
@@ -78,25 +118,31 @@ class SubObjectCreate(SubObjectBase):
     object_id: int
 
 
-class SubObjectResponse(SubObjectBase):
+class SubObject(SubObjectBase):
     subobject_id: int
     object_id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+SubObjectResponse = SubObject
 
 
 class CheckBase(BaseModel):
     info: Optional[str] = None
     location: Optional[str] = None
-    status_check: Optional[str] = None
+    status_check: Optional[CheckStatusEnum] = None
 
 
 class CheckCreate(CheckBase):
     subobject_id: int
 
 
-class CheckResponse(CheckBase):
+class Check(CheckCreate):
     check_id: int
-    subobject_id: int
     datetime: datetime
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class IncidentBase(BaseModel):
@@ -110,10 +156,16 @@ class IncidentCreate(IncidentBase):
     check_id: int
 
 
-class IncidentResponse(IncidentBase):
+class Incident(IncidentBase):
     incident_id: int
     check_id: int
     date: datetime
+
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+IncidentResponse = Incident
 
 
 class DocumentBase(BaseModel):
@@ -123,16 +175,25 @@ class DocumentBase(BaseModel):
     doc_date_end: date
     doc_image_id: str
 
+    @field_validator("doc_type", mode="before")
+    @classmethod
+    def _convert_doc_type(cls, value):
+        if isinstance(value, enum.Enum):
+            return value.value
+        return value
+
 
 class DocumentCreate(DocumentBase):
     user_id: int
     object_id: int
 
 
-class DocumentResponse(DocumentBase):
+class Document(DocumentBase):
     document_id: int
     user_id: int
     object_id: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MaterialBase(BaseModel):
@@ -148,16 +209,18 @@ class MaterialCreate(MaterialBase):
     doc_id: int
 
 
-class MaterialResponse(MaterialBase):
+class Material(MaterialBase):
     material_id: int
     doc_id: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Схемы для обновления (все поля опциональны)
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     password: Optional[str] = None
-    role: Optional[str] = None
+    role: Optional[RoleEnum] = None
 
 
 class ObjectUpdate(BaseModel):
@@ -171,9 +234,9 @@ class ObjectUpdate(BaseModel):
 
 class SubObjectUpdate(BaseModel):
     name: Optional[str] = None
-    status_inspector: Optional[str] = None
-    status_contractor: Optional[str] = None
-    status_admin: Optional[str] = None
+    status_inspector: Optional[StatusEnum] = None
+    status_contractor: Optional[StatusEnum] = None
+    status_admin: Optional[StatusEnum] = None
     prescription_info: Optional[str] = None
     object_id: Optional[int] = None
 
@@ -181,7 +244,7 @@ class SubObjectUpdate(BaseModel):
 class CheckUpdate(BaseModel):
     info: Optional[str] = None
     location: Optional[str] = None
-    status_check: Optional[str] = None
+    status_check: Optional[CheckStatusEnum] = None
     subobject_id: Optional[int] = None
 
 
@@ -194,7 +257,7 @@ class IncidentUpdate(BaseModel):
 
 
 class DocumentUpdate(BaseModel):
-    doc_type: Optional[str] = None
+    doc_type: Optional[DocTypeEnum] = None
     doc_number: Optional[str] = None
     doc_date_start: Optional[date] = None
     doc_date_end: Optional[date] = None
@@ -227,3 +290,53 @@ class TokenResponse(BaseModel):
 # Базовая схема ответа
 class MessageResponse(BaseModel):
     message: str
+
+
+__all__ = [
+    "StatusEnum",
+    "StatusBase",
+    "StatusCreate",
+    "Status",
+    "StatusResponse",
+    "StatusUpdate",
+    "CheckStatusEnum",
+    "RoleEnum",
+    "PrescriptionTypeEnum",
+    "DocTypeEnum",
+    "UserBase",
+    "UserCreate",
+    "User",
+    "UserLogin",
+    "PasswordResetRequest",
+    "ObjectBase",
+    "ObjectCreate",
+    "Object",
+    "ObjectResponse",
+    "ObjectUpdate",
+    "SubObjectBase",
+    "SubObjectCreate",
+    "SubObject",
+    "SubObjectResponse",
+    "SubObjectUpdate",
+    "CheckBase",
+    "CheckCreate",
+    "Check",
+    "CheckUpdate",
+    "IncidentBase",
+    "IncidentCreate",
+    "Incident",
+    "IncidentResponse",
+    "IncidentUpdate",
+    "DocumentBase",
+    "DocumentCreate",
+    "Document",
+    "DocumentUpdate",
+    "MaterialBase",
+    "MaterialCreate",
+    "Material",
+    "MaterialUpdate",
+    "UserUpdate",
+    "LoginRequest",
+    "TokenResponse",
+    "MessageResponse",
+]

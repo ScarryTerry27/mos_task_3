@@ -37,7 +37,7 @@ def get_object(object_id: int, db: Session = Depends(get_db)) -> schema.Object:
 
 @router.put("/{object_id}", response_model=schema.Object)
 def update_object(
-    object_id: int, object_in: schema.ObjectCreate, db: Session = Depends(get_db)
+    object_id: int, object_in: schema.ObjectUpdate, db: Session = Depends(get_db)
 ) -> schema.Object:
     service = ObjectService(db)
     obj = service.update_object(object_id, object_in)
