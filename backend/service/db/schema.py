@@ -86,6 +86,7 @@ class ObjectBase(BaseModel):
     name: str
     status: Optional[str] = None
     address: Optional[str] = None
+    inspection_id: Optional[int] = None
 
 
 class ObjectCreate(ObjectBase):
@@ -230,6 +231,7 @@ class ObjectUpdate(BaseModel):
     contractor_id: Optional[int] = None
     status: Optional[str] = None
     address: Optional[str] = None
+    inspection_id: Optional[int] = None
 
 
 class SubObjectUpdate(BaseModel):

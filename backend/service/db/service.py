@@ -98,6 +98,7 @@ class ObjectService:
             admin_id=object_in.admin_id,
             inspector_id=object_in.inspector_id,
             contractor_id=object_in.contractor_id,
+            inspection_id=object_in.inspection_id,
             status=object_in.status,
             address=object_in.address,
         )
@@ -131,6 +132,8 @@ class ObjectService:
             obj.inspector_id = object_in.inspector_id
         if object_in.contractor_id is not None:
             obj.contractor_id = object_in.contractor_id
+        if object_in.inspection_id is not None:
+            obj.inspection_id = object_in.inspection_id
         if object_in.status is not None:
             obj.status = object_in.status
         if object_in.address is not None:
