@@ -216,6 +216,11 @@ class Material(MaterialBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class PhotoProcessingResponse(BaseModel):
+    document: Document
+    materials: list[Material]
+
+
 # Схемы для обновления (все поля опциональны)
 class UserUpdate(BaseModel):
     name: Optional[str] = None
@@ -335,6 +340,7 @@ __all__ = [
     "MaterialCreate",
     "Material",
     "MaterialUpdate",
+    "PhotoProcessingResponse",
     "UserUpdate",
     "LoginRequest",
     "TokenResponse",
