@@ -14,6 +14,7 @@ router = APIRouter(prefix="/documents", tags=["documents"])
 def create_document(
     document_in: schema.DocumentCreate, db: Session = Depends(get_db)
 ) -> schema.Document:
+    # здесь выполнить проверку существует ли пользователь и объект если нет выдаем нот фоунд
     service = DocumentService(db)
     document = service.create_document(document_in)
     return schema.Document.model_validate(document)
@@ -21,6 +22,7 @@ def create_document(
 
 @router.get("/", response_model=List[schema.Document])
 def list_documents(db: Session = Depends(get_db)) -> List[schema.Document]:
+    # все проверки и офсет с лимитами, так же админу выдается все, а остальные если привязаны
     service = DocumentService(db)
     documents = service.list_documents()
     return [schema.Document.model_validate(item) for item in documents]
@@ -28,6 +30,7 @@ def list_documents(db: Session = Depends(get_db)) -> List[schema.Document]:
 
 @router.get("/{document_id}", response_model=schema.Document)
 def get_document(document_id: int, db: Session = Depends(get_db)) -> schema.Document:
+    # реализовать проверки и если пользователь привязан к данному материалу - показываем, нет - значит нет, админу все
     service = DocumentService(db)
     document = service.get_document(document_id)
     if not document:
@@ -39,6 +42,7 @@ def get_document(document_id: int, db: Session = Depends(get_db)) -> schema.Docu
 def update_document(
     document_id: int, document_in: schema.DocumentUpdate, db: Session = Depends(get_db)
 ) -> schema.Document:
+    # здесь так де проверки на id и user и так далее
     service = DocumentService(db)
     document = service.update_document(document_id, document_in)
     if not document:
@@ -48,6 +52,7 @@ def update_document(
 
 @router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_document(document_id: int, db: Session = Depends(get_db)) -> None:
+    # удалить может только админ
     service = DocumentService(db)
     deleted = service.delete_document(document_id)
     if not deleted:

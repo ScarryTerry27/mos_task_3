@@ -228,9 +228,8 @@ class ObjectUpdate(BaseModel):
     admin_id: Optional[int] = None
     inspector_id: Optional[int] = None
     contractor_id: Optional[int] = None
-    status: Optional[str] = None
+    status: Optional[StatusEnum] = StatusEnum.NOT_STARTED
     address: Optional[str] = None
-    inspection_id: Optional[int] = None
 
 
 class SubObjectUpdate(BaseModel):
