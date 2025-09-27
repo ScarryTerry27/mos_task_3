@@ -127,7 +127,6 @@ class MaterialResponse(MaterialBase):
     material_id: int
     doc_id: int
 
-# Схемы для обновления (все поля опциональны)
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     password: Optional[str] = None
@@ -161,6 +160,7 @@ class IncidentUpdate(BaseModel):
     incident_info: Optional[str] = None
     prescription_type: Optional[PrescriptionTypeEnum] = None
     check_id: Optional[int] = None
+    image_id = Optional[str] = None
 
 class DocumentUpdate(BaseModel):
     doc_type: Optional[str] = None
@@ -189,6 +189,6 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
-# Базовая схема ответа
+
 class MessageResponse(BaseModel):
     message: str

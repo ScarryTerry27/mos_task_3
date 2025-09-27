@@ -96,6 +96,7 @@ class Incident(Base):
     incident_status = Column(Boolean)
     incident_info = Column(Text)
     prescription_type = Column(Enum(PrescriptionTypeEnum))
+    image_id = Column(String(100))
 
     check = relationship("Check")
 
