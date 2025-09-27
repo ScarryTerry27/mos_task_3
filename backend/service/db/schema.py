@@ -12,6 +12,24 @@ class StatusEnum(str, Enum):
     ON_HOLD = "Приостановлено"
 
 
+class StatusBase(BaseModel):
+    status: StatusEnum
+    info: Optional[str] = None
+
+
+class StatusCreate(StatusBase):
+    pass
+
+
+class StatusResponse(StatusBase):
+    status_id: int
+
+
+class StatusUpdate(BaseModel):
+    status: Optional[StatusEnum] = None
+    info: Optional[str] = None
+
+
 class CheckStatusEnum(str, Enum):
     SUCCESSFUL = "Проверка пройдена"
     INCIDENT = "Инцидент"

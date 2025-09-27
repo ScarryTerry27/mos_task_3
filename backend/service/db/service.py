@@ -445,14 +445,16 @@ class StatusService:
         )
 
     def update_status(
-        self, status_id: int, status_in: schema.StatusBase
+        self, status_id: int, status_in: schema.StatusUpdate
     ) -> Optional[model.Status]:
         status = self.get_status(status_id)
         if not status:
             return None
 
-        status.status = model.StatusEnum(status_in.status.value)
-        status.info = status_in.info
+        if status_in.status is not None:
+            status.status = model.StatusEnum(status_in.status.value)
+        if status_in.info is not None:
+            status.info = status_in.info
         self._session.add(status)
         self._session.commit()
         self._session.refresh(status)
