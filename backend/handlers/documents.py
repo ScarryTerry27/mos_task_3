@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
 from services.db import schema
@@ -22,10 +22,15 @@ def create_document(
 
 
 @router.get("/", response_model=List[schema.Document])
-def list_documents(db: Session = Depends(get_db)) -> List[schema.Document]:
+def list_documents(
+    object_id: int = Query(..., ge=1),
+    limit: int = Query(100, ge=1),
+    offset: int = Query(0, ge=0),
+    db: Session = Depends(get_db),
+) -> List[schema.Document]:
     # все проверки и офсет с лимитами, так же админу выдается все, а остальные если привязаны
     service = DocumentService(db)
-    documents = service.list_documents()
+    documents = service.list_documents(object_id=object_id, limit=limit, offset=offset)
     return [schema.Document.model_validate(item) for item in documents]
 
 

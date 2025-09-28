@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from services.db import schema
@@ -20,9 +20,14 @@ def create_incident(
 
 
 @router.get("/", response_model=List[schema.Incident])
-def list_incidents(db: Session = Depends(get_db)) -> List[schema.Incident]:
+def list_incidents(
+    check_id: int = Query(..., ge=1),
+    limit: int = Query(100, ge=1),
+    offset: int = Query(0, ge=0),
+    db: Session = Depends(get_db),
+) -> List[schema.Incident]:
     service = IncidentService(db)
-    incidents = service.list_incidents()
+    incidents = service.list_incidents(check_id=check_id, limit=limit, offset=offset)
     return [schema.Incident.model_validate(item) for item in incidents]
 
 

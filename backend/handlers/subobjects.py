@@ -34,19 +34,41 @@ def create_subobject(
     return schema.SubObject.model_validate(subobject)
 
 
-@router.get("/", response_model=List[schema.SubObject])
+@router.get("/", response_model=schema.SubObjectListResponse)
 def list_subobjects(
-    db: Session = Depends(get_db),
+    object_id: int = Query(..., ge=1),
     limit: int = Query(100, ge=1),
     offset: int = Query(0, ge=0),
-) -> List[schema.SubObject]:
+    db: Session = Depends(get_db),
+) -> schema.SubObjectListResponse:
     # Ситуация как в объекте - возвращем админу все с оффсетом и лимитом, остальным только их проекты
     current_user = get_current_user()
+    object_service = ObjectService(db)
+    parent_object = object_service.get_object(object_id)
+    if not parent_object:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Object not found")
+
+    if current_user.role == schema.RoleEnum.INSPECTOR and parent_object.inspector_id != current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+        )
+    if current_user.role == schema.RoleEnum.CONTRACTOR and parent_object.contractor_id != current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
+        )
+
     service = SubObjectService(db)
     subobjects = service.list_subobjects(
-        limit=limit, offset=offset, role=current_user.role, user_id=current_user.user_id
+        object_id=object_id,
+        limit=limit,
+        offset=offset,
+        role=current_user.role,
+        user_id=current_user.user_id,
     )
-    return [schema.SubObject.model_validate(item) for item in subobjects]
+    return schema.SubObjectListResponse(
+        object=schema.Object.model_validate(parent_object),
+        subobjects=[schema.SubObject.model_validate(item) for item in subobjects],
+    )
 
 
 @router.get("/{subobject_id}", response_model=schema.SubObject)

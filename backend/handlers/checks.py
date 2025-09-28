@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
 from services.auth import get_current_user
@@ -57,7 +57,12 @@ def create_check(
 
 
 @router.get("/", response_model=List[schema.Check])
-def list_checks(db: Session = Depends(get_db)) -> List[schema.Check]:
+def list_checks(
+    subobject_id: int = Query(..., ge=1),
+    limit: int = Query(100, ge=1),
+    offset: int = Query(0, ge=0),
+    db: Session = Depends(get_db),
+) -> List[schema.Check]:
     # только не юзерам - при этом показываем админу все проверки, а instructor его проверки
     # так же реализовать проверку полей и id
     # реализовать проверку что instructor имеет доступ к данной проверке и субобъекту
@@ -67,8 +72,16 @@ def list_checks(db: Session = Depends(get_db)) -> List[schema.Check]:
             status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
         )
 
+    _ensure_subobject_access(db, subobject_id, current_user)
+
     service = CheckService(db)
-    checks = service.list_checks(role=current_user.role, user_id=current_user.user_id)
+    checks = service.list_checks(
+        subobject_id=subobject_id,
+        limit=limit,
+        offset=offset,
+        role=current_user.role,
+        user_id=current_user.user_id,
+    )
     return [schema.Check.model_validate(item) for item in checks]
 
 
