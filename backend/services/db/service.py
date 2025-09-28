@@ -194,9 +194,17 @@ class SubObjectService:
         return subobject
 
     def list_subobjects(
-            self, *, limit: int, offset: int, role: schema.RoleEnum, user_id: int
+            self,
+            *,
+            object_id: int,
+            limit: int,
+            offset: int,
+            role: schema.RoleEnum,
+            user_id: int,
     ) -> List[model.SubObject]:
-        query = self._session.query(model.SubObject)
+        query = self._session.query(model.SubObject).filter(
+            model.SubObject.object_id == object_id
+        )
 
         if role in (schema.RoleEnum.INSPECTOR, schema.RoleEnum.CONTRACTOR):
             query = query.join(
@@ -283,8 +291,18 @@ class CheckService:
         self._session.refresh(check)
         return check
 
-    def list_checks(self, *, role: schema.RoleEnum, user_id: int) -> List[model.Check]:
-        query = self._session.query(model.Check)
+    def list_checks(
+            self,
+            *,
+            subobject_id: int,
+            limit: int,
+            offset: int,
+            role: schema.RoleEnum,
+            user_id: int,
+    ) -> List[model.Check]:
+        query = self._session.query(model.Check).filter(
+            model.Check.subobject_id == subobject_id
+        )
 
         if role == schema.RoleEnum.INSPECTOR:
             query = (
@@ -295,7 +313,7 @@ class CheckService:
                 .filter(model.Object.inspector_id == user_id)
             )
 
-        return query.all()
+        return query.offset(offset).limit(limit).all()
 
     def get_check(self, check_id: int) -> Optional[model.Check]:
         return (
@@ -361,8 +379,16 @@ class IncidentService:
         self._session.refresh(incident)
         return incident
 
-    def list_incidents(self) -> List[model.Incident]:
-        return self._session.query(model.Incident).all()
+    def list_incidents(
+            self, *, check_id: int, limit: int, offset: int
+    ) -> List[model.Incident]:
+        return (
+            self._session.query(model.Incident)
+            .filter(model.Incident.check_id == check_id)
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
 
     def get_incident(self, incident_id: int) -> Optional[model.Incident]:
         return (
@@ -427,8 +453,16 @@ class DocumentService:
         self._session.refresh(document)
         return document
 
-    def list_documents(self) -> List[model.Document]:
-        return self._session.query(model.Document).all()
+    def list_documents(
+            self, *, object_id: int, limit: int, offset: int
+    ) -> List[model.Document]:
+        return (
+            self._session.query(model.Document)
+            .filter(model.Document.object_id == object_id)
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
 
     def get_document(self, document_id: int) -> Optional[model.Document]:
         return (
