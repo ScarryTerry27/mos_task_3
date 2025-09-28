@@ -1,6 +1,10 @@
 **/.env
 **/.venv
-**/.yaml
-**/.yml
+**/*.yaml
+**/*.yml
 **/.vscode
-**/.reqirements
+**/*requirements.txt
+**/*Dockerfile
+**/*.dockerignore
+**/*.sh
+**/*.db

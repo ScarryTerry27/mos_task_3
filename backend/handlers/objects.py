@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from services.db import schema
 from services.db.db import get_db
 from services.db.service import ObjectService, UserService
-from services.auth import get_current_user
+from security import get_current_user
 
 router = APIRouter(prefix="/objects", tags=["objects"])
 
@@ -68,12 +68,20 @@ def get_object(object_id: int, db: Session = Depends(get_db)) -> schema.Object:
     service = ObjectService(db)
     obj = service.get_object(object_id)
     if not obj:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Object not found")
-    if current_user.role == schema.RoleEnum.INSPECTOR and obj.inspector_id != current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Object not found"
+        )
+    if (
+        current_user.role == schema.RoleEnum.INSPECTOR
+        and obj.inspector_id != current_user.user_id
+    ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
         )
-    if current_user.role == schema.RoleEnum.CONTRACTOR and obj.contractor_id != current_user.user_id:
+    if (
+        current_user.role == schema.RoleEnum.CONTRACTOR
+        and obj.contractor_id != current_user.user_id
+    ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
         )
@@ -107,7 +115,9 @@ def update_object(
     service = ObjectService(db)
     obj = service.update_object(object_id, object_in)
     if not obj:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Object not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Object not found"
+        )
     return schema.Object.model_validate(obj)
 
 
@@ -122,5 +132,6 @@ def delete_object(object_id: int, db: Session = Depends(get_db)) -> None:
     service = ObjectService(db)
     deleted = service.delete_object(object_id)
     if not deleted:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Object not found")
-
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Object not found"
+        )

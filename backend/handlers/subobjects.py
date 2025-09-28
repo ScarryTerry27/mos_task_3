@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from services.db import schema
 from services.db.db import get_db
 from services.db.service import ObjectService, SubObjectService
-from services.auth import get_current_user
+from security import get_current_user
 
 router = APIRouter(prefix="/subobjects", tags=["subobjects"])
 
@@ -56,7 +56,9 @@ def get_subobject(subobject_id: int, db: Session = Depends(get_db)) -> schema.Su
     service = SubObjectService(db)
     subobject = service.get_subobject(subobject_id)
     if not subobject:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subobject not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Subobject not found"
+        )
     if current_user.role in (schema.RoleEnum.INSPECTOR, schema.RoleEnum.CONTRACTOR):
         object_service = ObjectService(db)
         parent_object = object_service.get_object(subobject.object_id)
@@ -79,7 +81,9 @@ def get_subobject(subobject_id: int, db: Session = Depends(get_db)) -> schema.Su
 
 @router.put("/{subobject_id}", response_model=schema.SubObject)
 def update_subobject(
-    subobject_id: int, subobject_in: schema.SubObjectUpdate, db: Session = Depends(get_db)
+    subobject_id: int,
+    subobject_in: schema.SubObjectUpdate,
+    db: Session = Depends(get_db),
 ) -> schema.SubObject:
     # так же как в объекте - только апдейтить может еще instructor - свое поле статус инструктор -
     # статус админ если мелькает от инспектора - возвращаем отсутствие прав
@@ -116,7 +120,9 @@ def update_subobject(
     service = SubObjectService(db)
     existing_subobject = service.get_subobject(subobject_id)
     if not existing_subobject:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subobject not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Subobject not found"
+        )
 
     if current_user.role in (schema.RoleEnum.INSPECTOR, schema.RoleEnum.CONTRACTOR):
         object_service = ObjectService(db)
@@ -145,7 +151,9 @@ def update_subobject(
 
     subobject = service.update_subobject(subobject_id, subobject_in)
     if not subobject:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subobject not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Subobject not found"
+        )
     return schema.SubObject.model_validate(subobject)
 
 
@@ -160,5 +168,6 @@ def delete_subobject(subobject_id: int, db: Session = Depends(get_db)) -> None:
     service = SubObjectService(db)
     deleted = service.delete_subobject(subobject_id)
     if not deleted:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subobject not found")
-
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Subobject not found"
+        )

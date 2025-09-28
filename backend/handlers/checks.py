@@ -3,10 +3,15 @@ from typing import List
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
-from services.auth import get_current_user
+from security import get_current_user
 from services.db import schema
 from services.db.db import get_db
-from services.db.service import CheckService, IncidentService, ObjectService, SubObjectService
+from services.db.service import (
+    CheckService,
+    IncidentService,
+    ObjectService,
+    SubObjectService,
+)
 from services.others.video_client import analyze_video
 
 router = APIRouter(prefix="/checks", tags=["checks"])
@@ -86,7 +91,9 @@ def get_check(check_id: int, db: Session = Depends(get_db)) -> schema.Check:
     service = CheckService(db)
     check = service.get_check(check_id)
     if not check:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Check not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Check not found"
+        )
     _ensure_subobject_access(db, check.subobject_id, current_user)
     return schema.Check.model_validate(check)
 
@@ -105,7 +112,9 @@ def update_check(
     service = CheckService(db)
     existing_check = service.get_check(check_id)
     if not existing_check:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Check not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Check not found"
+        )
     _ensure_subobject_access(db, existing_check.subobject_id, current_user)
 
     if "subobject_id" in check_in.model_fields_set:
@@ -126,7 +135,9 @@ def delete_check(check_id: int, db: Session = Depends(get_db)) -> None:
     service = CheckService(db)
     deleted = service.delete_check(check_id)
     if not deleted:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Check not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Check not found"
+        )
 
 
 @router.post(
